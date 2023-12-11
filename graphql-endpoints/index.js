@@ -1,4 +1,5 @@
 // npm install @apollo/server express graphql cors
+import "colors";
 import "dotenv/config";
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
@@ -45,3 +46,4 @@ app.use(
 await new Promise((resolve) => httpServer.listen({ port: API_PORT }, resolve));
 
 console.log(`🚀 Server ready at http://localhost:${API_PORT}/`);
+console.log(`🚀 ${"Query at: ".green} ${"https://studio.apollographql.com/dev".blue.bold}`)
