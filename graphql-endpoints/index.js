@@ -29,6 +29,16 @@ const server = new ApolloServer({
 // Ensure we wait for our server to start
 await server.start();
 
+// Same ApolloServer initialization as before, plus the drain plugin
+// for our httpServer.
+const server2 = new ApolloServer({
+  typeDefs,
+  resolvers,
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+});
+// Ensure we wait for our server to start
+await server2.start();
+
 // Set up our Express middleware to handle CORS, body parsing,
 // and our expressMiddleware function.
 app.use(
@@ -41,6 +51,17 @@ app.use(
     context: async ({ req }) => ({ token: req.headers.token }),
   }),
 );
+
+app.use(
+    '/ManageProducts',
+    cors(),
+    express.json(),
+    // expressMiddleware accepts the same arguments:
+    // an Apollo Server instance and optional configuration options
+    expressMiddleware(server, {
+      context: async ({ req }) => ({ token: req.headers.token }),
+    }),
+  );
 
 // Modified server startup
 await new Promise((resolve) => httpServer.listen({ port: API_PORT }, resolve));
