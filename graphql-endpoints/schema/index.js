@@ -44,7 +44,7 @@ export const productTypeDefs = `#graphql
     type Product {
         sku: String
         productName: String
-        ProductCategory: String
+        productCategory: String
     }
 
     type GetProduct {

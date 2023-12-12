@@ -36,7 +36,7 @@ export const resolversProduct = {
                 product_data: {
                     sku: "123",
                     productName: "Product Name x",
-                    ProductCategory: "Product Category xx"
+                    productCategory: "Product Category xx"
                 }
             }
         }
