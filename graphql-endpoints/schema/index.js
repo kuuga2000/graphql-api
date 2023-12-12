@@ -1,4 +1,6 @@
-export const userTypeDefs = `#graphql
+import { gql } from 'graphql-tag';
+
+export const userTypeDefs = gql`
     type Query {
         apiStatus: ApiStatus
         getUser: GetUser
