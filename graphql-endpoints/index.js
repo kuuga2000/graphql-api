@@ -9,8 +9,8 @@ import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/dis
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
-import { typeDefs } from "./schema/index.js";
-import { resolvers } from "./resolvers/index.js";
+import { userTypeDefs, productTypeDefs } from "./schema/index.js";
+import { resolversUser, resolversProduct } from "./resolvers/index.js";
 
 const API_PORT = process.env.API_PORT;
 
@@ -24,9 +24,9 @@ const httpServer = http.createServer(app);
 // Same ApolloServer initialization as before, plus the drain plugin
 // for our httpServer.
 const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  //introspection: process.env.NODE_ENV !== 'production',
+  typeDefs: userTypeDefs,
+  resolvers: resolversUser,
+  introspection: process.env.NODE_ENV !== 'production',
   plugins: [
     ApolloServerPluginDrainHttpServer({ httpServer }),
     // Install a landing page plugin based on NODE_ENV
@@ -40,9 +40,9 @@ await server.start();
 // Same ApolloServer initialization as before, plus the drain plugin
 // for our httpServer.
 const server2 = new ApolloServer({
-  typeDefs,
-  resolvers,
-  //introspection: process.env.NODE_ENV !== 'production',
+  typeDefs: productTypeDefs,
+  resolvers: resolversProduct,
+  introspection: process.env.NODE_ENV !== 'production',
   plugins: [
     ApolloServerPluginDrainHttpServer({ httpServer }),
     // Install a landing page plugin based on NODE_ENV

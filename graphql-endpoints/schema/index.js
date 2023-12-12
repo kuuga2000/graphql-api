@@ -1,4 +1,4 @@
-export const typeDefs = `#graphql
+export const userTypeDefs = `#graphql
     type Query {
         apiStatus: ApiStatus
         getUser: GetUser
@@ -29,4 +29,26 @@ export const typeDefs = `#graphql
         status: String
         user_data: User
     }
-`
+`;
+
+export const productTypeDefs = `#graphql
+    type Query {
+        getAllProducts: GetAllProducts
+        getProduct: GetProduct
+    }
+
+    type GetAllProducts {
+        status: String
+    }
+
+    type Product {
+        sku: String
+        productName: String
+        ProductCategory: String
+    }
+
+    type GetProduct {
+        status: String
+        product_data: Product
+    }
+`;

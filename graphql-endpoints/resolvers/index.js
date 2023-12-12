@@ -1,4 +1,4 @@
-export const resolvers = {
+export const resolversUser = {
     Query: {
         apiStatus: () => {
             return {
@@ -19,6 +19,26 @@ export const resolvers = {
     Mutation: {
         createUser: (_, { input }) => {
             return input;
+        }
+    }
+}
+
+export const resolversProduct = {
+    Query: {
+        getAllProducts: () => {
+            return {
+                status: "OK"
+            }
+        },
+        getProduct: () => {
+            return {
+                status: "OK",
+                product_data: {
+                    sku: "123",
+                    productName: "Product Name x",
+                    ProductCategory: "Product Category xx"
+                }
+            }
         }
     }
 }
