@@ -4,6 +4,8 @@ import "dotenv/config";
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import { ApolloServerPluginLandingPageLocalDefault, ApolloServerPluginLandingPageProductionDefault } from '@apollo/server/plugin/landingPage/default';
+import { ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/disabled';
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
@@ -24,8 +26,13 @@ const httpServer = http.createServer(app);
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  introspection: process.env.NODE_ENV !== 'production',
-  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  //introspection: process.env.NODE_ENV !== 'production',
+  plugins: [
+    ApolloServerPluginDrainHttpServer({ httpServer }),
+    // Install a landing page plugin based on NODE_ENV
+    //process.env.NODE_ENV === 'production' ? ApolloServerPluginLandingPageProductionDefault({ graphRef: 'my-graph-id@my-graph-variant', footer: false, }) : ApolloServerPluginLandingPageLocalDefault({ footer: false }),
+    process.env.NODE_ENV === 'production' ? ApolloServerPluginLandingPageDisabled() : ApolloServerPluginLandingPageLocalDefault(),
+  ],
 });
 // Ensure we wait for our server to start
 await server.start();
@@ -35,8 +42,13 @@ await server.start();
 const server2 = new ApolloServer({
   typeDefs,
   resolvers,
-  introspection: process.env.NODE_ENV !== 'production',
-  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  //introspection: process.env.NODE_ENV !== 'production',
+  plugins: [
+    ApolloServerPluginDrainHttpServer({ httpServer }),
+    // Install a landing page plugin based on NODE_ENV
+    //process.env.NODE_ENV === 'production' ? ApolloServerPluginLandingPageProductionDefault({ graphRef: 'my-graph-id@my-graph-variant', footer: false, }) : ApolloServerPluginLandingPageLocalDefault({ footer: false }),
+    process.env.NODE_ENV === 'production' ? ApolloServerPluginLandingPageDisabled() : ApolloServerPluginLandingPageLocalDefault(),
+  ],
 });
 // Ensure we wait for our server to start
 await server2.start();
@@ -55,15 +67,15 @@ app.use(
 );
 
 app.use(
-    '/ManageProducts',
-    cors(),
-    express.json(),
-    // expressMiddleware accepts the same arguments:
-    // an Apollo Server instance and optional configuration options
-    expressMiddleware(server, {
-      context: async ({ req }) => ({ token: req.headers.token }),
-    }),
-  );
+  '/ManageProducts',
+  cors(),
+  express.json(),
+  // expressMiddleware accepts the same arguments:
+  // an Apollo Server instance and optional configuration options
+  expressMiddleware(server2, {
+    context: async ({ req }) => ({ token: req.headers.token }),
+  }),
+);
 
 // Modified server startup
 await new Promise((resolve) => httpServer.listen({ port: API_PORT }, resolve));
