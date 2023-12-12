@@ -6,7 +6,8 @@ import cors from 'cors';
 import { expressMiddleware } from '@apollo/server/express4';
 import { createServer } from './server.js';
 
-const API_PORT = process.env.API_PORT;
+const API_PORT = process.env.API_PORT || 4000;
+const URL_PATH = process.env.URL_PATH || '/graphql';
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -17,23 +18,19 @@ app.get('/', (req, res) => {
   res.send('404');
 });
 
-app.use(
-  '/ManageUsers',
-  cors(),
-  express.json(),
-  expressMiddleware(user, {
-    context: async ({ req }) => ({ token: req.headers.token }),
-  }),
-);
+const applyApolloMiddleware = (app, path, server) => {
+  app.use(
+    `${URL_PATH}/${path}`,
+    cors(),
+    express.json(),
+    expressMiddleware(server, {
+      context: async ({ req }) => ({ token: req.headers.token }),
+    }),
+  );
+}
 
-app.use(
-  '/ManageProducts',
-  cors(),
-  express.json(),
-  expressMiddleware(product, {
-    context: async ({ req }) => ({ token: req.headers.token }),
-  }),
-);
+applyApolloMiddleware(app, 'ManageUsers', user);
+applyApolloMiddleware(app, 'ManageProducts', product);
 
 await new Promise((resolve) => httpServer.listen({ port: API_PORT }, resolve));
 
