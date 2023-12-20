@@ -10,7 +10,7 @@ export const resolversPatient = {
                 status: "OK",
                 patient_data: {
                     patientId: "123",
-                    patientName: "Robocop",
+                    patientName: "Robocop Murphy",
                     patientCategory: "BPJS"
                 }
             }
