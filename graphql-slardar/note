@@ -1,0 +1,3 @@
+docker run -it --rm -v $(pwd):/app -w /app node:22-alpine sh -c "corepack enable && pnpm add @apollo/server graphql"
+
+https://www.youtube.com/watch?v=q6MxsS2iPnw&list=PL4cUxeGkcC9gUxtblNUahcsg0WLxmrK_y&index=3
