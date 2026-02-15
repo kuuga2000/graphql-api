@@ -4,6 +4,16 @@ services:
     build: .
     environment:
       - NODE_ENV=development
+    stop_grace_period: 0s # Instant restart
+    develop:
+      watch:
+        - action: sync+restart # <--- Change 'sync' to 'sync+restart'
+          path: ./ # Watch the current folder on your computer
+          target: /app # Sync it to the /app folder in the container
+          ignore:
+            - node_modules/ # Never sync the heavy node_modules folder
+        - action: rebuild
+          path: package.json # Rebuild everything if you add new packages
 
   nginx:
     container_name: slardar_proxy

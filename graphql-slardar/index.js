@@ -1,16 +1,31 @@
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 
-const typeDefs = `#graphql
-  type Query {
-    latestVersion: String
-  }
-`;
+import db from './_db.js';
+
+import { typeDefs } from './schema.js';
 
 const resolvers = {
   Query: {
-    latestVersion: () => "Apollo Server 5.4.0",
-  },
+    games() {
+      return db.games
+    },
+    game(_, args) {
+      return db.games.find((game) => game.id === args.id)
+    },
+    authors() {
+      return db.authors
+    },
+    author(_, args) {
+      return db.authors.find((game) => game.id === args.id)
+    },
+    reviews() {
+      return db.reviews
+    },
+    review(_, args) {
+      return db.reviews.find((review) => review.id === args.id)
+    }
+  }
 };
 
 const server = new ApolloServer({ typeDefs, resolvers });
