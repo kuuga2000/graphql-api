@@ -1,7 +1,9 @@
 services:
   slardar_app:
     container_name: slardar_node
-    build: .
+    build:
+      context: .
+      target: development # <--- Forces compose to use the dev stage
     environment:
       - NODE_ENV=development
     stop_grace_period: 0s # Instant restart

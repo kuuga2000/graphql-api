@@ -1,28 +1,27 @@
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
+import { loadSchemaSync } from '@graphql-tools/load';
+import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
 
-import db from './_db.js';
+import db from './_db.ts';
 
-import { typeDefs } from './schema.js';
+// 1. Load the schema from your .graphql file
+const typeDefs = loadSchemaSync('./schema.graphql', {
+  loaders: [new GraphQLFileLoader()],
+});
 
 const resolvers = {
   Query: {
-    games() {
-      return db.games
-    },
-    game(_, args) {
+    games: () => db.games,
+    game(_: any, args: { id: string }) {
       return db.games.find((game) => game.id === args.id)
     },
-    authors() {
-      return db.authors
-    },
-    author(_, args) {
+    authors: () => db.authors,
+    author(_: any, args: { id: string }) {
       return db.authors.find((game) => game.id === args.id)
     },
-    reviews() {
-      return db.reviews
-    },
-    review(_, args) {
+    reviews: () => db.reviews,
+    review(_: any, args: { id: string }) {
       return db.reviews.find((review) => review.id === args.id)
     }
   }

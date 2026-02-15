@@ -20,3 +20,29 @@ FROM base AS production
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 COPY . .
 CMD ["node", "index.js"]
+
+===========other file
+# --- Base Stage ---
+FROM node:22-alpine AS base
+RUN corepack enable && corepack prepare pnpm@latest --activate
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+
+# --- Build Stage (Compiles TS) ---
+FROM base AS builder
+RUN pnpm install --frozen-lockfile
+COPY . .
+RUN pnpm run build
+
+# --- Production Stage (Final Image) ---
+FROM node:22-alpine AS production
+WORKDIR /app
+# Only install production dependencies to save space
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --prod --frozen-lockfile
+
+# Copy only the compiled JS from the builder stage
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 4000
+CMD ["node", "dist/index.js"]

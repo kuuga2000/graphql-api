@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    /* Change noEmit to false so you can build for production */
+    "noEmit": false,
+    /* Required when noEmit is false and using TS extensions in imports */
+    "emitDeclarationOnly": false,
+    /* Keeps your imports clean */
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

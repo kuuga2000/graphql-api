@@ -4,16 +4,24 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "start": "node index.js",
-    "dev": "node --watch index.js"
+    "dev": "node --watch --experimental-strip-types index.ts"
   },
   "dependencies": {
     "@apollo/server": "^5.4.0",
+    "@graphql-tools/graphql-file-loader": "^8.1.9",
+    "@graphql-tools/load": "^8.1.8",
     "graphql": "^16.12.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
       "@apollo/protobufjs"
     ]
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }
