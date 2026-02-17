@@ -1,3 +1,69 @@
 docker run -it --rm -v $(pwd):/app -w /app node:22-alpine sh -c "corepack enable && pnpm add @apollo/server graphql"
 
-https://www.youtube.com/watch?v=q6MxsS2iPnw&list=PL4cUxeGkcC9gUxtblNUahcsg0WLxmrK_y&index=3
+https://www.youtube.com/watch?v=joMO4LwRa5Q&list=PL4cUxeGkcC9gUxtblNUahcsg0WLxmrK_y&index=7
+
+# -d runs it in the background so you can keep using your terminal
+docker compose up -d
+
+docker compose up --watch
+docker compose up --build --watch
+
+Option B: The "GraphQL Tools" Way (Better for large projects)
+
+If you eventually want to split your schema into multiple files (e.g., games.graphql, reviews.graphql), use the @graphql-tools/load package.
+pnpm add @graphql-tools/load @graphql-tools/graphql-file-loader
+docker run -it --rm -v $(pwd):/app -w /app node:22-alpine sh -c "corepack enable && pnpm add @graphql-tools/load @graphql-tools/graphql-file-loader
+docker run --rm -v ${PWD}:/app -w /app node:22-alpine sh -c "corepack enable && pnpm add -D typescript tsx @types/node"
+
+
+ before i go to vendure what else to lean graphql, i have finish basic learn using apollo
+Gemini said
+
+Moving from a basic Apollo setup to a professional-grade framework like Vendure is a big jump. Vendure is built on NestJS, uses TypeScript extensively, and handles complex database relations.
+
+Before you dive into Vendure, you should master these four intermediate GraphQL concepts. This will prevent you from getting lost in Vendure's massive codebase.
+1. Data Loaders (The N+1 Problem)
+
+In your current setup, if you query 10 authors and their reviews, your server might be hitting the "database" (your _db.js) 11 times. In a real app, this kills performance.
+
+    Learn: How to use the dataloader library to batch and cache requests.
+
+    Why for Vendure: Vendure uses these heavily to keep the shop fast when loading products and variants.
+
+2. Fragments and Complexity
+
+As your frontend grows, your queries get messy.
+
+    Learn: How to use Fragments to make queries reusable.
+
+    Learn: Query Complexity—how to stop a user from sending a "malicious" query that asks for too much data at once.
+
+3. Mutations with Input Types
+
+Instead of passing 5 different arguments to a function, professional GraphQL uses Input objects.
+
+    Learn: Defining input CreateProductInput { ... } in your schema.
+
+    Why for Vendure: Almost every "write" operation in Vendure (adding to cart, updating profile) uses an Input object.
+
+4. Integration with a Real Database (TypeORM/Prisma)
+
+Since you are currently using a local JS file (_db.js), the biggest shock in Vendure will be the Database Layer.
+
+    Learn: Connect your Apollo server to a PostgreSQL or MySQL database using an ORM (Object-Relational Mapper).
+
+    Vendure Connection: Vendure is built on TypeORM. Understanding how a TypeScript class maps to a Database Table is essential.
+
+Suggested Learning Path (The "Slardar" Roadmap)
+Level	Topic	Project Task
+Current	Basic Apollo	You have typeDefs and resolvers.
+Step 1	Advanced Schema	Move your logic into "Services" instead of putting everything in the resolver.
+Step 2	TypeScript Interfaces	Create "Types" for your Data so your resolvers are 100% type-safe.
+Step 3	Authentication	Learn how to use the context argument in Apollo to protect certain data.
+A Quick Tip on "The Vendure Way"
+
+Vendure is "Code-First" or "Plugin-based." It doesn't just use a single schema.graphql. It stitches many small schemas together.
+
+Before you switch, try to split your current project into two files: games.resolver.ts and authors.resolver.ts. If you can get them to work together in one Apollo Server, you are ready for Vendure.
+
+Would you like me to show you how to refactor your current resolvers into a more "professional" structure that looks like a Vendure plugin?
