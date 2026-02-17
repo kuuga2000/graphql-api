@@ -3,8 +3,13 @@ import { startStandaloneServer } from '@apollo/server/standalone';
 import { loadSchemaSync } from '@graphql-tools/load';
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
 
+import { GameService } from './services/game.service.ts';
+import { AuthorService } from './services/author.service.ts';
+const gameService = new GameService();
+const authorService = new AuthorService();
+
 import db from './_db.ts';
-import { getBuiltinModule } from 'node:process';
+
 
 // 1. Load the schema from your .graphql file
 const typeDefs = loadSchemaSync('./schema.graphql', {
@@ -13,23 +18,17 @@ const typeDefs = loadSchemaSync('./schema.graphql', {
 
 const resolvers = {
   Query: {
-    games: () => db.games,
-    game(_: any, args: { id: string }) {
-      return db.games.find((game) => game.id === args.id)
-    },
-    authors: () => db.authors,
-    author(_: any, args: { id: string }) {
-      return db.authors.find((game) => game.id === args.id)
-    },
+    games: () => gameService.findAll(),
+    game: (_: any, args: { id: string }) => gameService.findOne(args.id),
+    authors: () => authorService.findAll(),
+    author:(_: any, args: { id: string }) => authorService.findOne(args.id),
     reviews: () => db.reviews,
     review(_: any, args: { id: string }) {
       return db.reviews.find((review) => review.id === args.id)
     }
   },
   Game: {
-    reviews(parent: any) {
-      return db.reviews.filter((r) => r.game_id === parent.id)
-    }
+    reviews: (parent: any) => gameService.getReviewsForGame(parent.id)
   },
   Review: {
     author(parent: any) {
