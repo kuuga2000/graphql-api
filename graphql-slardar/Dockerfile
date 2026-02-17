@@ -23,7 +23,7 @@ FROM base AS development
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install
 COPY . .
 # Node 22 native watch mode
-CMD ["pnpm", "run", "dev"]
+CMD ["node", "--watch", "--experimental-strip-types", "index.ts"]
 
 # --- Production Stage ---
 FROM base AS production

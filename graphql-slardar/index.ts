@@ -4,6 +4,7 @@ import { loadSchemaSync } from '@graphql-tools/load';
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader';
 
 import db from './_db.ts';
+import { getBuiltinModule } from 'node:process';
 
 // 1. Load the schema from your .graphql file
 const typeDefs = loadSchemaSync('./schema.graphql', {
@@ -23,6 +24,24 @@ const resolvers = {
     reviews: () => db.reviews,
     review(_: any, args: { id: string }) {
       return db.reviews.find((review) => review.id === args.id)
+    }
+  },
+  Game: {
+    reviews(parent: any) {
+      return db.reviews.filter((r) => r.game_id === parent.id)
+    }
+  },
+  Review: {
+    author(parent: any) {
+      return db.authors.find((a) => a.id === parent.author_id)
+    },
+    game(parent: any) {
+      return db.games.find((g)=> g.id ===parent.game_id)
+    }
+  },
+  Author: {
+    reviews(parent: any) {
+      return db.reviews.filter((r) => r.author_id === parent.id)
     }
   }
 };
