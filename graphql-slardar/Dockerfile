@@ -20,7 +20,7 @@ EXPOSE 4000
 # --- Development Stage ---
 FROM base AS development
 # Uses BuildKit cache to speed up pnpm installs
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store CI=true pnpm install
 COPY . .
 # Node 22 native watch mode
 CMD ["node", "--watch", "--experimental-strip-types", "index.ts"]

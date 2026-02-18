@@ -67,3 +67,14 @@ Vendure is "Code-First" or "Plugin-based." It doesn't just use a single schema.g
 Before you switch, try to split your current project into two files: games.resolver.ts and authors.resolver.ts. If you can get them to work together in one Apollo Server, you are ready for Vendure.
 
 Would you like me to show you how to refactor your current resolvers into a more "professional" structure that looks like a Vendure plugin?
+
+🚀 Then Rebuild
+
+Because you changed image version:
+
+docker compose down -v
+docker compose up --build
+
+
+⚠ -v removes old volume data.
+If you don’t want to lose data, remove -v.
