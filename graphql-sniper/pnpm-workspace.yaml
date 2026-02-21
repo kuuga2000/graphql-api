@@ -1,6 +1,7 @@
 packages:
-  - "apps/*"
+  - apps/*
 
 onlyBuiltDependencies:
-  - "@apollo/protobufjs"
-  - "@nestjs/core"
+  - '@apollo/protobufjs'
+  - '@nestjs/core'
+  - unrs-resolver

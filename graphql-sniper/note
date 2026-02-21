@@ -259,3 +259,7 @@ Use code with caution.
 This Removes Containers for services that are no longer defined in your compose file, keeping your environment clean.
 Did you change the service name inside your docker-compose.yaml as well, or just the package.json?
 
+docker run -it --rm -v $(pwd):/app -w /app node:22-alpine sh -c "pnpm --filter @sniper/api add @nestjs/graphql @nestjs/apollo @apollo/server graphql"
+
+docker compose build --no-cache && docker compose up //rebuild
+
