@@ -1,0 +1,261 @@
+docker run -it --rm -v $(pwd):/app -w /app node:22-alpine sh -c "corepack enable && pnpm add @nestjs/graphql@latest @nestjs/apollo@latest @apollo/server@latest graphql@latest"
+
+docker run -it --rm -v $(pwd):/app -w /app node:22-alpine sh -c "pnpm approve-builds"
+
+Your Setup Is Correct
+
+You now have:
+
+@nestjs/apollo 13.2.4
+
+@nestjs/graphql 13.2.4
+
+@apollo/server 5.4.0
+
+graphql 16.12.0
+
+That is the correct stack for NestJS 11 + Apollo v5.
+
+⚠ Why You Still See a Peer Warning
+@apollo/server-plugin-landing-page-graphql-playground
+✕ unmet peer @apollo/server@^4.0.0: found 5.4.0
+
+
+This happens because:
+
+The old GraphQL Playground plugin was built for Apollo v4
+
+You are using Apollo v5
+
+NestJS still includes that plugin as optional compatibility
+
+But it does NOT break anything.
+
+It is safe to ignore.
+
+🧠 Important: Playground Is Deprecated
+
+Apollo v5 no longer officially supports the old Playground.
+
+If you want GraphQL UI in development, use:
+
+Option 1 (Recommended): Apollo Sandbox (default)
+
+Just enable introspection:
+
+GraphQLModule.forRoot({
+  autoSchemaFile: true,
+  introspection: true,
+});
+
+
+Apollo Sandbox will appear automatically in dev.
+
+Option 2: Use GraphiQL Instead
+
+If you want modern UI without warnings.
+
+⚠ The Real Thing You Must Fix
+
+This warning:
+
+Ignored build scripts:
+@apollo/protobufjs
+@nestjs/core
+
+
+Since you're using pnpm v10, you MUST approve builds:
+
+Run:
+
+pnpm approve-builds
+
+
+Select:
+
+@nestjs/core
+@apollo/protobufjs
+
+
+Then reinstall:
+
+pnpm install
+
+
+This is important.
+
+🎯 Final Verdict
+
+Your install is:
+
+✔ Correct
+✔ Production-safe
+✔ Compatible
+✔ Apollo v5 ready
+
+The warning is harmless.
+
+If you'd like, I can now:
+
+Show you the correct NestJS GraphQLModule config for Apollo v5
+
+Show Docker production config
+
+Or help you remove that playground warning completely
+
+Tell me what you want next 🚀
+
+src/
+ ├── modules/
+ │    ├── user/
+ │    │    ├── user.module.ts
+ │    │    ├── user.resolver.ts
+ │    │    ├── user.service.ts
+ │    │    └── dto/
+ │    ├── auth/
+ │    └── ...
+ ├── common/
+ ├── config/
+ ├── main.ts
+ └── app.module.ts
+
+src/
+ ├── modules/
+ │    ├── user/
+ │    │    ├── user.module.ts
+ │    │    ├── user.resolver.ts
+ │    │    ├── user.service.ts
+ │    │    ├── entities/
+ │    │    │    └── user.entity.ts
+ │    │    ├── dto/
+ │    │    │    ├── create-user.input.ts
+ │    │    │    └── update-user.input.ts
+ │    │    └── models/
+ │    │         └── user.model.ts (GraphQL ObjectType)
+ │    ├── auth/
+ │    └── ...
+ ├── common/
+ │    ├── guards/
+ │    ├── decorators/
+ │    ├── filters/
+ │    └── pipes/
+ ├── config/
+ ├── main.ts
+ └── app.module.ts
+
+
+Yes ✅ — src/ is the root folder of your NestJS application code.
+
+When we say “root” here, we mean:
+
+The root of your application source code, not the root of the entire repository.
+
+🧠 In Your Case (Workspace Setup)
+
+Your real project root is:
+
+slardar-sniper/
+
+
+But your Nest app likely lives in:
+
+slardar-sniper/apps/api/
+
+
+So the actual structure would be:
+
+slardar-sniper/
+ ├── apps/
+ │    └── api/
+ │         ├── src/   👈 this is your NestJS source root
+ │         ├── package.json
+ │         ├── tsconfig.json
+ │         └── ...
+ ├── Dockerfile
+ ├── docker-compose.yaml
+ ├── pnpm-workspace.yaml
+ └── package.json
+
+
+So yes:
+
+apps/api/src/
+
+
+is your application source root.
+
+🏗 Final Real Structure (Complete Picture)
+slardar-sniper/
+ ├── apps/
+ │    └── api/
+ │         ├── src/
+ │         │    ├── modules/
+ │         │    │    ├── user/
+ │         │    │    ├── auth/
+ │         │    ├── common/
+ │         │    ├── config/
+ │         │    ├── main.ts
+ │         │    └── app.module.ts
+ │         ├── package.json
+ │         └── tsconfig.json
+ ├── Dockerfile
+ ├── docker-compose.yaml
+ ├── pnpm-workspace.yaml
+ └── package.json
+
+🧠 Why Nest Uses src/
+
+Nest CLI creates:
+
+src/
+  main.ts
+  app.module.ts
+
+
+Because:
+
+TypeScript compiles from src/
+
+Output goes to dist/
+
+Keeps source and compiled code separated
+
+🎯 Important Concept
+Folder	Meaning
+slardar-sniper/	Monorepo root
+apps/api/	One NestJS application
+apps/api/src/	Application source root
+dist/	Compiled output
+✅ Short Answer
+
+Yes — src/ is the root folder of your NestJS app.
+
+But in a monorepo, it is not the repository root — it is the app’s source root.
+
+If you want, next we can:
+
+Build your User module properly
+
+Wire GraphQL cleanly
+
+Or refactor your current project into this structure step-by-step
+
+What do you want to do next?
+
+
+docker run -it --rm -v $(pwd):/app -w /app node:22-alpine sh -c "corepack enable && pnpm dlx @nestjs/cli new apps/api"
+or
+docker run -it --rm -v $(pwd):/app -w /app node:22-alpine sh -c "pnpm dlx @nestjs/cli new apps/api"
+
+docker compose up --build --remove-orphans
+
+Pro-Tip: The "Orphan" Problem
+If you renamed your service inside the docker-compose.yaml file (not just the package name), you should run:
+bash
+
+docker compose up --build --remove-orphans
+
+Use code with caution.
+This Removes Containers for services that are no longer defined in your compose file, keeping your environment clean.
+Did you change the service name inside your docker-compose.yaml as well, or just the package.json?
+

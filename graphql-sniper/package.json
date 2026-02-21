@@ -1,0 +1,9 @@
+{
+  "name": "slardar-sniper",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter @sniper/api start:dev",
+    "build": "pnpm --filter @sniper/api build",
+    "start": "pnpm --filter @sniper/api start"
+  }
+}
