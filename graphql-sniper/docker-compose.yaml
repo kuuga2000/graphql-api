@@ -11,13 +11,13 @@ services:
     develop:
       watch:
         - action: sync+restart # <--- Change 'sync' to 'sync+restart'
-          path: ./src # Watch the current folder on your computer
-          target: /app/src # Sync it to the /app folder in the container
+          path: ./apps/api/src # Watch the current folder on your computer
+          target: /app/apps/api/src # Sync it to the /app folder in the container
           ignore:
             - dist/
             - node_modules/ # Never sync the heavy node_modules folder
         - action: rebuild
-          path: package.json # Rebuild everything if you add new packages
+          path: ./apps/api/package.json # Rebuild everything if you add new packages
 
   nginx:
     container_name: sniper_proxy

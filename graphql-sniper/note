@@ -263,3 +263,8 @@ docker run -it --rm -v $(pwd):/app -w /app node:22-alpine sh -c "pnpm --filter @
 
 docker compose build --no-cache && docker compose up //rebuild
 
+docker compose up --build
+docker compose watch
+
+// For development with live reload, use:
+docker compose up --build --watch
