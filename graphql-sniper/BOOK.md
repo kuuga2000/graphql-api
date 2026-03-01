@@ -266,3 +266,117 @@ Date: 2026-03-01
 - Add tests:
   - Go service/repository tests for order consistency rules.
   - Nest resolver/service tests with mocked REST.
+
+13. Sample code and purpose
+
+Sample A: Nest resolver with GraphQL field extraction and forwarding
+
+```ts
+@Query(() => [Product], { name: 'products' })
+products(
+  @Args() args: ProductsArgs,
+  @Info() info: GraphQLResolveInfo,
+): Promise<Product[]> {
+  return this.catalogService.findAll(
+    args.limit,
+    args.offset,
+    this.getRequestedProductFields(info),
+  );
+}
+```
+
+Purpose:
+- Reads fields requested by client (`id`, `name`, etc).
+- Sends those fields to service so service can forward projection to REST.
+
+Sample B: Nest service building upstream URL with `fields`
+
+```ts
+const params = new URLSearchParams({
+  limit: String(limit),
+  offset: String(offset),
+});
+const projectedFields = this.sanitizeFields(fields);
+if (projectedFields.length > 0) {
+  params.set('fields', projectedFields.join(','));
+}
+
+const envelope = await this.fetchJson<ProductListApiEnvelope>(
+  `${this.baseUrl}/products?${params.toString()}`,
+);
+```
+
+Purpose:
+- Converts GraphQL field selection into REST query param.
+- Keeps Nest as gateway/orchestrator only.
+
+Sample C: Go handler parsing and validating projected fields
+
+```go
+fields, err := parseProjectedFields(c.Query("fields"))
+if err != nil {
+	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	return
+}
+
+products, err := h.service.ListProducts(c.Request.Context(), limit, offset, fields)
+```
+
+Purpose:
+- Accepts projection from GraphQL.
+- Validates whitelist to prevent unsupported fields.
+- Passes field list to service/repository.
+
+Sample D: Go repository dynamic SQL projection
+
+```go
+selectColumns, err := buildProductSelectColumns(fields)
+if err != nil {
+	return nil, err
+}
+
+query := fmt.Sprintf(`
+	SELECT %s
+	FROM products
+	ORDER BY id
+	LIMIT $1 OFFSET $2
+`, strings.Join(selectColumns, ", "))
+```
+
+Purpose:
+- Selects only requested columns from DB.
+- Avoids over-fetching all product columns.
+
+Sample E: Centralized field binding map in Go repository
+
+```go
+var productFieldBindings = map[string]productFieldBinding{
+	"id": {column: "id", target: func(p *domain.Product) any { return &p.ID }},
+	"name": {column: "name", target: func(p *domain.Product) any { return &p.Name }},
+	"description": {column: "description", target: func(p *domain.Product) any { return &p.Description }},
+	"slug": {column: "slug", target: func(p *domain.Product) any { return &p.Slug }},
+	"isActive": {column: "is_active", target: func(p *domain.Product) any { return &p.IsActive }},
+}
+```
+
+Purpose:
+- Single source of truth for:
+  - API field -> SQL column mapping
+  - API field -> scan target mapping
+- Reduces duplicated switch-case logic.
+
+Sample F: Go handler response shaping
+
+```go
+var productResponseExtractors = map[string]func(domain.Product) any{
+	"id":          func(p domain.Product) any { return p.ID },
+	"name":        func(p domain.Product) any { return p.Name },
+	"description": func(p domain.Product) any { return p.Description },
+	"slug":        func(p domain.Product) any { return p.Slug },
+	"isActive":    func(p domain.Product) any { return p.IsActive },
+}
+```
+
+Purpose:
+- Returns JSON keys based on requested fields.
+- Keeps response-shaping logic concise and extensible.
