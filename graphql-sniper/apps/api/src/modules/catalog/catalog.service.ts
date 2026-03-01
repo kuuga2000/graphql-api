@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Product } from './entities/product.type';
@@ -30,7 +29,6 @@ type ProductApiEnvelope = {
 
 @Injectable()
 export class CatalogService {
-  private readonly logger = new Logger(CatalogService.name);
   private readonly baseUrl =
     process.env.SECRET_SHOP_API_BASE_URL ?? 'http://localhost:8080/api/v1';
   private readonly allowedFields = new Set([
@@ -54,9 +52,6 @@ export class CatalogService {
     if (projectedFields.length > 0) {
       params.set('fields', projectedFields.join(','));
     }
-    this.logger.debug(
-      `findAll forwarding fields=[${projectedFields.join(',')}] url=${this.baseUrl}/products?${params.toString()}`,
-    );
 
     const envelope = await this.fetchJson<ProductListApiEnvelope>(
       `${this.baseUrl}/products?${params.toString()}`,
@@ -78,9 +73,6 @@ export class CatalogService {
     }
 
     const suffix = params.toString() ? `?${params.toString()}` : '';
-    this.logger.debug(
-      `findById forwarding fields=[${projectedFields.join(',')}] url=${this.baseUrl}/products/${numericId}${suffix}`,
-    );
     const envelope = await this.fetchJson<ProductApiEnvelope>(
       `${this.baseUrl}/products/${numericId}${suffix}`,
     );
