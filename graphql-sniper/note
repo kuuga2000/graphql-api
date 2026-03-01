@@ -268,3 +268,19 @@ docker compose watch
 
 // For development with live reload, use:
 docker compose up --build --watch
+
+docker compose up -d --force-recreate sniper_app
+
+docker compose up -d --force-recreate sniper_app for what this comment mean?
+
+docker compose up -d --force-recreate sniper_app means:
+
+up: start the service
+-d: run in background
+--force-recreate: destroy and create a new container even if config/image didn’t change
+sniper_app: apply only to that service
+Why use it here:
+
+Environment variable changes (SECRET_SHOP_API_BASE_URL) are applied only when container is recreated.
+A normal restart may keep old env in some workflows.
+So this command ensures sniper_app gets the latest env values.

@@ -7,6 +7,7 @@ services:
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://postgres:postgres@172.17.0.1:5432/slardar_db
+      - SECRET_SHOP_API_BASE_URL=http://172.17.0.1:8080/api/v1
     stop_grace_period: 0s # Instant restart
     develop:
       watch:
