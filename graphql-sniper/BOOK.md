@@ -139,3 +139,130 @@ Date: 2026-02-21
   - confirms query empty state.
   - confirms mutation result.
   - confirms query-after-mutation state.
+
+---
+
+GraphQL + Go Gateway Session Notes
+
+Date: 2026-03-01
+
+1. What we learned today
+- GraphQL as a gateway is a strong architecture when:
+  - GraphQL handles client-facing schema and response shaping.
+  - Go REST API owns business logic and database access.
+  - GraphQL never accesses DB directly.
+- Field selection in GraphQL can be forwarded to REST (`fields=...`) so DB can select only needed columns.
+- Docker networking matters:
+  - `localhost` inside container means that container itself.
+  - for separate compose projects, use host bridge IP or shared network strategy.
+
+2. Architecture we implemented
+- Client -> Nest GraphQL (`graphql-sniper/apps/api`) -> Go REST (`secret-shop`) -> PostgreSQL.
+- Nest resolver/service acts as gateway/orchestrator only.
+- Go API implements layered design:
+  - `handler` (HTTP)
+  - `service` (business logic + error mapping)
+  - `repository` (SQL + DB I/O)
+  - `domain` (core model structs)
+
+3. Nest GraphQL code we added and why
+- Added `catalog` module:
+  - `catalog.module.ts`: module registration.
+  - `catalog.resolver.ts`: GraphQL queries (`products`, `product`) + selected field extraction from GraphQL AST.
+  - `catalog.service.ts`: calls Go REST API via `fetch`, validates params, maps errors.
+  - `dto/products.args.ts`: `limit`, `offset` args schema.
+  - `entities/product.type.ts`: GraphQL `Product` output schema.
+- Updated `app.module.ts` to import `CatalogModule`.
+- Purpose:
+  - expose stable GraphQL schema to frontend.
+  - forward request to Go REST API.
+  - support response projection by forwarding selected fields.
+
+4. Go REST code we added and why
+- Added product stack:
+  - `internal/domain/product.go`: product model.
+  - `internal/repository/product_repository.go`: DB queries.
+  - `internal/service/product_service.go`: service methods + not-found mapping.
+  - `internal/handler/product_handler.go`: HTTP endpoints + query param validation.
+  - `cmd/api/main.go`: route wiring under `/api/v1`.
+- REST endpoints:
+  - `GET /api/v1/products?limit=&offset=&fields=...`
+  - `GET /api/v1/products/:id?fields=...`
+- Purpose:
+  - separate concerns cleanly.
+  - keep DB logic in Go service.
+  - accept projected fields and reduce DB/select payload.
+
+5. Schema design: Nest GraphQL
+- Output schema uses decorators:
+  - `@ObjectType()` + `@Field()` for `Product`.
+- Query args schema uses:
+  - `@ArgsType()` + `@Field(() => Int)` for pagination.
+- Resolver defines schema operations:
+  - `@Query(() => [Product], { name: 'products' })`
+  - `@Query(() => Product, { name: 'product' })`
+- GraphQL schema is auto-generated (`autoSchemaFile: true`) from decorators.
+
+6. Schema/contract design: Go REST
+- Request contract:
+  - `limit` (positive), `offset` (non-negative), `fields` (comma-separated whitelist).
+- Response contract:
+  - list: `{ data: [...], meta: { limit, offset, count } }`
+  - detail: `{ data: {...} }`
+- Projection contract:
+  - GraphQL-selected fields are sent to Go in `fields=...`.
+  - Go validates fields and maps API fields to SQL columns (e.g. `isActive -> is_active`).
+
+7. SQL projection optimization we implemented
+- Initial state: SQL selected all columns, then JSON filtered response.
+- Final state:
+  - repository builds dynamic `SELECT` columns from whitelisted requested fields.
+  - scan targets are dynamic and aligned with selected columns.
+- Result:
+  - if GraphQL asks `id`, `name`, SQL becomes:
+    - `SELECT id, name FROM products ORDER BY id LIMIT $1 OFFSET $2`
+
+8. Refactors for maintainability
+- Replaced repetitive field switch logic with maps:
+  - repository: field bindings map (column + scan target function).
+  - handler: response extractor map for JSON output.
+- Benefit:
+  - add/change a field in one place instead of many switch blocks.
+
+9. Key issues we hit and fixes
+- GraphQL gateway unreachable upstream:
+  - cause: wrong container network target (`localhost` confusion).
+  - fix: set `SECRET_SHOP_API_BASE_URL` reachable from Nest container.
+- Docker rebuild error (`credentials` / BuildKit frontend):
+  - cause: Docker credential/helper instability.
+  - fix: re-auth/restart Docker Desktop or remove syntax line as temporary fallback.
+- TypeScript resolver compile errors:
+  - `GraphQLResolveInfo` import needed `import type`.
+  - guarded `selectionSet` for strict TS checks.
+- Field forwarding empty from GraphQL:
+  - fixed resolver field extraction with robust fallback.
+
+10. Docker/dev workflow updates
+- Go compose updated with watch:
+  - `secret-shop/docker-compose.yml` now has `develop.watch` with `action: rebuild`.
+- Useful commands:
+  - Go rebuild: `docker compose up -d --build secret_app`
+  - Nest recreate: `docker compose up -d --build --force-recreate sniper_app`
+  - Go logs: `docker compose logs -f secret_app`
+  - Nest logs: `docker compose logs -f sniper_app`
+
+11. How to verify projection end-to-end
+- Direct REST test:
+  - `GET /api/v1/products?limit=1&offset=0&fields=id,name`
+  - verify response only has `id`, `name`.
+- GraphQL test:
+  - `products { id name }`
+  - verify Go receives `fields=id,name`.
+  - verify SQL only selects requested columns.
+
+12. Next recommended steps
+- Add auth at GraphQL gateway and forward user context to Go.
+- Build first order/cart write flow with transactions in Go.
+- Add tests:
+  - Go service/repository tests for order consistency rules.
+  - Nest resolver/service tests with mocked REST.
